@@ -11,7 +11,7 @@ import {
   useRiderManifests,
   useRiderTasks,
 } from '@/lib/api/hooks';
-import type { DeliveryTaskDTO } from '@/lib/api/types';
+import type { RiderTaskDTO } from '@/lib/api/types';
 import { ApiError } from '@/lib/api/client';
 import { formatBdt, takaToMinor } from '@/lib/utils/money';
 
@@ -63,13 +63,16 @@ export default function RiderPage() {
   );
 }
 
-function RiderTaskCard({ task }: { task: DeliveryTaskDTO }) {
+function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
   const completePickup = useCompletePickup();
   const completeDelivery = useCompleteDelivery();
   const failTask = useFailTask();
   const [notes, setNotes] = useState('');
   const [codTaka, setCodTaka] = useState('');
   const [reason, setReason] = useState('');
+  const [counts, setCounts] = useState<Record<string, number>>(
+    Object.fromEntries(task.items.map((i) => [i.orderItemId, i.quantity])),
+  );
   const [err, setErr] = useState<string | null>(null);
 
   const run = async (fn: () => Promise<unknown>) => {
@@ -88,7 +91,10 @@ function RiderTaskCard({ task }: { task: DeliveryTaskDTO }) {
       <div className="flex items-start justify-between">
         <div>
           <p className="font-semibold">
-            {task.type === 'pickup' ? 'Pickup' : 'Delivery'} · order {task.orderId.slice(0, 8)}…
+            {task.type === 'pickup' ? 'Pickup' : 'Delivery'} · {task.orderCode}
+          </p>
+          <p className="text-xs text-gray-400">
+            {task.address.area}, {task.address.city}
           </p>
           <p className="text-sm text-gray-500">
             {task.status} · {new Date(task.scheduledStart).toLocaleString()}
@@ -106,8 +112,33 @@ function RiderTaskCard({ task }: { task: DeliveryTaskDTO }) {
         <div className="mt-3 space-y-2">
           {task.type === 'pickup' ? (
             <>
+              <p className="text-sm font-medium">Confirm counts</p>
+              {task.items.map((i) => (
+                <div key={i.orderItemId} className="flex items-center justify-between gap-3">
+                  <span className="text-sm">{i.displayName}</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    className="w-20"
+                    value={counts[i.orderItemId] ?? 0}
+                    onChange={(e) =>
+                      setCounts((c) => ({ ...c, [i.orderItemId]: Math.max(0, Number(e.target.value) || 0) }))
+                    }
+                  />
+                </div>
+              ))}
               <Input placeholder="Condition notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
-              <Button onClick={() => run(() => completePickup.mutateAsync({ id: task.id, conditionNotes: notes || undefined }))}>
+              <Button
+                onClick={() =>
+                  run(() =>
+                    completePickup.mutateAsync({
+                      id: task.id,
+                      counts: Object.entries(counts).map(([orderItemId, quantity]) => ({ orderItemId, quantity })),
+                      conditionNotes: notes || undefined,
+                    }),
+                  )
+                }
+              >
                 Complete pickup
               </Button>
             </>

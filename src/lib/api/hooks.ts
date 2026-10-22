@@ -6,6 +6,7 @@ import type {
   OrderDTO,
   PartnerDTO,
   PricingEntry,
+  RiderTaskDTO,
   RouteManifestDTO,
   ServiceDTO,
   UserDTO,
@@ -203,7 +204,7 @@ export function useRecordIntake() {
 // --- Rider ---
 
 export function useRiderTasks() {
-  return useQuery<DeliveryTaskDTO[]>({ queryKey: ['rider-tasks'], queryFn: () => apiFetch('/rider/tasks') });
+  return useQuery<RiderTaskDTO[]>({ queryKey: ['rider-tasks'], queryFn: () => apiFetch('/rider/tasks') });
 }
 
 export function useRiderManifests() {
@@ -216,10 +217,14 @@ export function useRiderManifests() {
 export function useCompletePickup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { id: string; conditionNotes?: string }) =>
+    mutationFn: (input: {
+      id: string;
+      counts: { orderItemId: string; quantity: number }[];
+      conditionNotes?: string;
+    }) =>
       apiFetch<DeliveryTaskDTO>(`/rider/tasks/${input.id}/complete-pickup`, {
         method: 'POST',
-        body: { counts: [], conditionNotes: input.conditionNotes },
+        body: { counts: input.counts, conditionNotes: input.conditionNotes },
       }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['rider-tasks'] }),
   });

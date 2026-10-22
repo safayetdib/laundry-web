@@ -135,6 +135,13 @@ export interface DeliveryTaskDTO {
   version: number;
 }
 
+export interface RiderTaskDTO extends DeliveryTaskDTO {
+  orderCode: string;
+  zoneId: string;
+  address: { contactName: string; phone: string; line1: string; area: string; city: string };
+  items: { orderItemId: string; serviceCode: string; displayName: string; quantity: number }[];
+}
+
 export interface RouteStopDTO {
   id: string;
   sequence: number;
