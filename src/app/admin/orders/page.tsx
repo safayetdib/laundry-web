@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Alert, Button, Card, Select, Spinner } from '@/components/ui';
+import { Alert, Badge, Button, Card, Select, Spinner } from '@/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import { useAdminOrders, useAssignPartner, useConfirmOrder, usePartners } from '@/lib/api/hooks';
 import type { OrderDTO } from '@/lib/api/types';
@@ -58,8 +58,12 @@ function AdminOrderRow({
       <div className="flex items-start justify-between">
         <div>
           <p className="font-semibold">{order.orderCode}</p>
-          <p className="text-sm text-gray-500">
-            {order.status.replace(/_/g, ' ')} · {order.quote.status} · {order.addressSnapshot.area}
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+            <Badge tone={order.status === 'delivered' ? 'green' : order.status === 'cancelled' ? 'red' : 'blue'}>
+              {order.status.replace(/_/g, ' ')}
+            </Badge>
+            <span>quote {order.quote.status}</span>
+            <span>· {order.addressSnapshot.area}</span>
           </p>
         </div>
         <p className="font-semibold">{formatBdt(order.quote.total)}</p>

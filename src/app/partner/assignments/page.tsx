@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Alert, Button, Card, Input, Spinner } from '@/components/ui';
+import { Alert, Badge, Button, Card, Input, Spinner } from '@/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import {
   useAcceptAssignment,
@@ -12,6 +12,14 @@ import {
 } from '@/lib/api/hooks';
 import type { AssignmentDTO } from '@/lib/api/types';
 import { ApiError } from '@/lib/api/client';
+
+function assignmentTone(status: AssignmentDTO['status']): 'blue' | 'amber' | 'green' | 'red' | 'neutral' {
+  if (status === 'assigned') return 'blue';
+  if (status === 'rejected') return 'red';
+  if (status === 'ready_for_collection' || status === 'completed' || status === 'dispatched') return 'green';
+  if (status === 'accepted' || status === 'received' || status === 'processing') return 'amber';
+  return 'neutral';
+}
 
 export default function PartnerAssignmentsPage() {
   const { isLoading, hasRole } = useAuth();
@@ -61,7 +69,11 @@ function AssignmentCard({ assignment }: { assignment: AssignmentDTO }) {
       <div className="flex items-start justify-between">
         <div>
           <p className="font-semibold">Order {assignment.orderId.slice(0, 8)}…</p>
-          <p className="text-sm text-gray-500">{assignment.status.replace(/_/g, ' ')}</p>
+          <p className="mt-1">
+            <Badge tone={assignmentTone(assignment.status)}>
+              {assignment.status.replace(/_/g, ' ')}
+            </Badge>
+          </p>
         </div>
       </div>
 
@@ -112,6 +124,7 @@ function AssignmentCard({ assignment }: { assignment: AssignmentDTO }) {
                   type="number"
                   min={0}
                   className="w-20"
+                  aria-label={`Received quantity for ${i.serviceCode}`}
                   value={received[i.orderItemId] ?? 0}
                   onChange={(e) =>
                     setReceived((r) => ({ ...r, [i.orderItemId]: Math.max(0, Number(e.target.value) || 0) }))
@@ -119,7 +132,12 @@ function AssignmentCard({ assignment }: { assignment: AssignmentDTO }) {
                 />
               </div>
             ))}
-            <Input placeholder="Condition notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Input
+              aria-label="Condition notes (optional)"
+              placeholder="Condition notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
             <Button
               onClick={() =>
                 run(() =>

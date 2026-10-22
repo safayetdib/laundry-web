@@ -5,9 +5,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Chosen for >=4.5:1 contrast with white button text (WCAG AA).
         brand: {
-          DEFAULT: '#1f6feb',
-          dark: '#1a5fd0',
+          DEFAULT: '#1d4ed8',
+          dark: '#1e40af',
         },
       },
     },

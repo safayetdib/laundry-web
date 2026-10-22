@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Alert, Button, Card, Spinner } from '@/components/ui';
+import { Alert, Badge, Button, Card, Spinner } from '@/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import { useApproveQuote, useCustomerOrders } from '@/lib/api/hooks';
 import { formatBdt } from '@/lib/utils/money';
@@ -36,8 +36,11 @@ export default function OrdersPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="font-semibold">{o.orderCode}</p>
-              <p className="text-sm text-gray-500">
-                {o.status.replace(/_/g, ' ')} · pickup {new Date(o.pickup.start).toLocaleString()}
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                <Badge tone={o.status === 'delivered' ? 'green' : o.status === 'cancelled' ? 'red' : 'blue'}>
+                  {o.status.replace(/_/g, ' ')}
+                </Badge>
+                <span>pickup {new Date(o.pickup.start).toLocaleString()}</span>
               </p>
             </div>
             <div className="text-right">

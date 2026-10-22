@@ -138,8 +138,8 @@ export default function BookPage() {
 
       <Card className="space-y-4">
         <div>
-          <Label>Zone</Label>
-          <Select value={zoneId} onChange={(e) => setZoneId(e.target.value)}>
+          <Label htmlFor="zone">Zone</Label>
+          <Select id="zone" value={zoneId} onChange={(e) => setZoneId(e.target.value)}>
             <option value="">Select a zone…</option>
             {zones.data?.map((z) => (
               <option key={z.id} value={z.id}>
@@ -165,6 +165,7 @@ export default function BookPage() {
                   type="number"
                   min={0}
                   className="w-20"
+                  aria-label={`Quantity for ${s.name}`}
                   value={quantities[s.code] ?? 0}
                   onChange={(e) =>
                     setQuantities((q) => ({ ...q, [s.code]: Math.max(0, Number(e.target.value) || 0) }))
@@ -177,12 +178,12 @@ export default function BookPage() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label>Pickup date</Label>
-            <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <Label htmlFor="pickup-date">Pickup date</Label>
+            <Input id="pickup-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div>
-            <Label>Pickup window</Label>
-            <Select value={pickupStart} onChange={(e) => setPickupStart(e.target.value)}>
+            <Label htmlFor="pickup-window">Pickup window</Label>
+            <Select id="pickup-window" value={pickupStart} onChange={(e) => setPickupStart(e.target.value)}>
               <option value="">Select…</option>
               {pickupSlots.map((s) => (
                 <option key={s.start} value={s.start}>
@@ -198,8 +199,12 @@ export default function BookPage() {
         <h2 className="font-semibold">Pickup address</h2>
         {(['contactName', 'phone', 'line1', 'area', 'city'] as const).map((field) => (
           <div key={field}>
-            <Label>{field === 'line1' ? 'Address line' : field}</Label>
+            <Label htmlFor={`addr-${field}`}>{field === 'line1' ? 'Address line' : field}</Label>
             <Input
+              id={`addr-${field}`}
+              autoComplete={
+                field === 'phone' ? 'tel' : field === 'contactName' ? 'name' : 'address-line1'
+              }
               value={address[field]}
               onChange={(e) => setAddress((a) => ({ ...a, [field]: e.target.value }))}
             />

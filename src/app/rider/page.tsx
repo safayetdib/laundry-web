@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Alert, Button, Card, Input, Spinner } from '@/components/ui';
+import { Alert, Badge, Button, Card, Input, Spinner } from '@/components/ui';
 import { useAuth } from '@/lib/auth/context';
 import {
   useCompleteDelivery,
@@ -96,9 +96,12 @@ function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
           <p className="text-xs text-gray-400">
             {task.address.area}, {task.address.city}
           </p>
-          <p className="text-sm text-gray-500">
-            {task.status} · {new Date(task.scheduledStart).toLocaleString()}
-            {task.attempts > 0 ? ` · ${task.attempts} attempt(s)` : ''}
+          <p className="mt-1 flex items-center gap-2 text-sm text-gray-600">
+            <Badge tone={task.status === 'completed' ? 'green' : task.status === 'failed' ? 'red' : 'blue'}>
+              {task.status}
+            </Badge>
+            <span>{new Date(task.scheduledStart).toLocaleString()}</span>
+            {task.attempts > 0 ? <span>· {task.attempts} attempt(s)</span> : null}
           </p>
           {task.codAmountCollected !== undefined && (
             <p className="text-xs text-gray-400">COD collected {formatBdt(task.codAmountCollected)}</p>
@@ -120,6 +123,7 @@ function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
                     type="number"
                     min={0}
                     className="w-20"
+                    aria-label={`Count for ${i.displayName}`}
                     value={counts[i.orderItemId] ?? 0}
                     onChange={(e) =>
                       setCounts((c) => ({ ...c, [i.orderItemId]: Math.max(0, Number(e.target.value) || 0) }))
@@ -127,7 +131,12 @@ function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
                   />
                 </div>
               ))}
-              <Input placeholder="Condition notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Input
+                aria-label="Condition notes (optional)"
+                placeholder="Condition notes (optional)"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
               <Button
                 onClick={() =>
                   run(() =>
@@ -147,6 +156,7 @@ function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
               <Input
                 type="number"
                 min={0}
+                aria-label="COD collected in taka (optional)"
                 placeholder="COD collected (৳, optional)"
                 value={codTaka}
                 onChange={(e) => setCodTaka(e.target.value)}
@@ -167,7 +177,12 @@ function RiderTaskCard({ task }: { task: RiderTaskDTO }) {
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Input placeholder="Failure reason" value={reason} onChange={(e) => setReason(e.target.value)} />
+                <Input
+                  aria-label="Failure reason"
+                  placeholder="Failure reason"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                />
                 <Button
                   variant="ghost"
                   disabled={!reason}
