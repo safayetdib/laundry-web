@@ -33,6 +33,16 @@ export function Nav() {
             Admin
           </Link>
         )}
+        {hasRole('partner_staff') && (
+          <Link href="/partner/assignments" className="text-sm text-gray-600 hover:text-gray-900">
+            Partner
+          </Link>
+        )}
+        {hasRole('rider') && (
+          <Link href="/rider" className="text-sm text-gray-600 hover:text-gray-900">
+            Rider
+          </Link>
+        )}
         <div className="ml-auto flex items-center gap-3">
           {user ? (
             <>

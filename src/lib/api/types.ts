@@ -91,3 +91,63 @@ export interface PartnerDTO {
   serviceCodes: string[];
   zoneIds: string[];
 }
+
+export interface AssignmentItemDTO {
+  orderItemId: string;
+  serviceCode: string;
+  garmentCode?: string;
+  quantity: number;
+}
+
+export interface AssignmentDTO {
+  id: string;
+  orderId: string;
+  partnerId: string;
+  status:
+    | 'assigned'
+    | 'accepted'
+    | 'rejected'
+    | 'received'
+    | 'processing'
+    | 'ready_for_collection'
+    | 'dispatched'
+    | 'completed';
+  items: AssignmentItemDTO[];
+  payable: { currency: string; amount: number } | null;
+  intake?: {
+    receivedItems: { orderItemId: string; quantity: number }[];
+    discrepancies: { orderItemId: string; expected: number; received: number }[];
+  };
+  version: number;
+  createdAt: string;
+}
+
+export interface DeliveryTaskDTO {
+  id: string;
+  orderId: string;
+  type: 'pickup' | 'return_delivery';
+  status: 'scheduled' | 'en_route' | 'arrived' | 'completed' | 'failed';
+  scheduledStart: string;
+  scheduledEnd: string;
+  attempts: number;
+  failureReason?: string;
+  codAmountCollected?: number;
+  version: number;
+}
+
+export interface RouteStopDTO {
+  id: string;
+  sequence: number;
+  type: 'pickup' | 'delivery' | 'partner_dropoff' | 'partner_collection';
+  orderId?: string;
+  deliveryTaskId?: string;
+  status: string;
+}
+
+export interface RouteManifestDTO {
+  id: string;
+  date: string;
+  status: 'draft' | 'assigned' | 'in_progress' | 'completed';
+  stops: RouteStopDTO[];
+  version: number;
+}

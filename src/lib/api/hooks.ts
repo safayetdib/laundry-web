@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiFetch, setCsrfToken } from './client';
 import type {
+  AssignmentDTO,
+  DeliveryTaskDTO,
   OrderDTO,
   PartnerDTO,
   PricingEntry,
+  RouteManifestDTO,
   ServiceDTO,
   UserDTO,
   ZoneDTO,
@@ -148,5 +151,105 @@ export function useAssignPartner() {
         body: { partnerId: input.partnerId, items: input.items },
       }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-orders'] }),
+  });
+}
+
+// --- Partner ---
+
+export function usePartnerAssignments() {
+  return useQuery<AssignmentDTO[]>({
+    queryKey: ['partner-assignments'],
+    queryFn: () => apiFetch('/partner/assignments'),
+  });
+}
+
+export function useAcceptAssignment() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<AssignmentDTO>(`/partner/assignments/${id}/accept`, { method: 'POST' }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['partner-assignments'] }),
+  });
+}
+
+export function useAssignmentStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; status: AssignmentDTO['status'] }) =>
+      apiFetch<AssignmentDTO>(`/partner/assignments/${input.id}/status`, {
+        method: 'POST',
+        body: { status: input.status },
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['partner-assignments'] }),
+  });
+}
+
+export function useRecordIntake() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      id: string;
+      receivedItems: { orderItemId: string; quantity: number }[];
+      conditionNotes?: string;
+    }) =>
+      apiFetch<AssignmentDTO>(`/partner/assignments/${input.id}/intake`, {
+        method: 'POST',
+        body: { receivedItems: input.receivedItems, conditionNotes: input.conditionNotes },
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['partner-assignments'] }),
+  });
+}
+
+// --- Rider ---
+
+export function useRiderTasks() {
+  return useQuery<DeliveryTaskDTO[]>({ queryKey: ['rider-tasks'], queryFn: () => apiFetch('/rider/tasks') });
+}
+
+export function useRiderManifests() {
+  return useQuery<RouteManifestDTO[]>({
+    queryKey: ['rider-manifests'],
+    queryFn: () => apiFetch('/rider/manifests'),
+  });
+}
+
+export function useCompletePickup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; conditionNotes?: string }) =>
+      apiFetch<DeliveryTaskDTO>(`/rider/tasks/${input.id}/complete-pickup`, {
+        method: 'POST',
+        body: { counts: [], conditionNotes: input.conditionNotes },
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['rider-tasks'] }),
+  });
+}
+
+export function useCompleteDelivery() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; codAmountCollected?: number; conditionNotes?: string }) =>
+      apiFetch<DeliveryTaskDTO>(`/rider/tasks/${input.id}/complete-delivery`, {
+        method: 'POST',
+        body: {
+          ...(input.codAmountCollected !== undefined
+            ? { codAmountCollected: input.codAmountCollected }
+            : {}),
+          conditionNotes: input.conditionNotes,
+        },
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['rider-tasks'] }),
+  });
+}
+
+export function useFailTask() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: { id: string; reason: string }) =>
+      apiFetch<DeliveryTaskDTO>(`/rider/tasks/${input.id}/fail`, {
+        method: 'POST',
+        body: { reason: input.reason },
+      }),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['rider-tasks'] }),
   });
 }
